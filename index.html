@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Neon Snake Arcade - Play Online</title>
+  <meta name="description" content="A modern retro-themed neon snake game built with HTML5 Canvas, responsive controls, Web Audio effects, and dynamic difficulty.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="game-container" role="main">
+    <!-- Header Section -->
+    <header class="header">
+      <div class="title-section">
+        <h1 class="game-title">
+          <span class="icon" aria-hidden="true">🐍</span>
+          <span>Neon Snake</span>
+        </h1>
+      </div>
+      <!-- Live Game Status Badge -->
+      <div id="game-status-badge" class="status-badge status-ready" aria-live="polite">
+        <span class="indicator-dot" aria-hidden="true"></span>
+        <span id="game-status-text">Ready</span>
+      </div>
+    </header>
+
+    <!-- Scoreboard Dashboard -->
+    <section class="scoreboard" aria-label="Game Scores and Stats">
+      <div class="score-card">
+        <span class="score-label">Score</span>
+        <span id="score-val" class="score-value current">0</span>
+      </div>
+      <div class="score-card">
+        <span class="score-label">High Score</span>
+        <span id="high-score-val" class="score-value high">0</span>
+      </div>
+      <div class="score-card">
+        <span class="score-label">Speed</span>
+        <span id="speed-val" class="score-value speed">1.0x</span>
+      </div>
+    </section>
+
+    <!-- Canvas Frame with Overlays -->
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas" width="400" height="400" aria-label="Snake Game Board"></canvas>
+
+      <!-- 1. Start Screen Overlay -->
+      <div id="start-overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="start-title">
+        <div class="overlay-icon" aria-hidden="true">🎮</div>
+        <h2 id="start-title" class="overlay-title title-start">Neon Snake Arcade</h2>
+        <p class="overlay-desc">Control the neon snake to eat glowing apples. Speed increases as your score climbs!</p>
+        <div class="overlay-actions">
+          <button id="overlay-btn-start" class="btn-primary" type="button">
+            <span>Start Game</span> ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Pause Screen Overlay -->
+      <div id="pause-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+        <div class="overlay-icon" aria-hidden="true">⏸</div>
+        <h2 id="pause-title" class="overlay-title title-pause">Game Paused</h2>
+        <p class="overlay-desc">Take a breather. Press Resume or hit Spacebar to jump back in.</p>
+        <div class="overlay-actions">
+          <button id="overlay-btn-resume" class="btn-primary" type="button">
+            <span>Resume</span> ▶
+          </button>
+          <button id="overlay-btn-restart-pause" class="btn-secondary" type="button">
+            <span>Restart</span> 🔄
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Game Over Screen Overlay -->
+      <div id="gameover-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gameover-title">
+        <div class="overlay-icon" aria-hidden="true">💥</div>
+        <h2 id="gameover-title" class="overlay-title title-gameover">Game Over!</h2>
+        
+        <div id="new-highscore-alert" class="high-score-banner hidden">
+          ★ New High Score! ★
+        </div>
+
+        <div class="overlay-stats">
+          <div class="overlay-stat-item">
+            <span class="score-label">Final Score</span>
+            <span id="final-score-val" class="overlay-stat-val">0</span>
+          </div>
+          <div class="overlay-stat-item">
+            <span class="score-label">Apples</span>
+            <span id="final-apples-val" class="overlay-stat-val">0</span>
+          </div>
+          <div class="overlay-stat-item">
+            <span class="score-label">Length</span>
+            <span id="final-length-val" class="overlay-stat-val">3</span>
+          </div>
+        </div>
+
+        <div class="overlay-actions">
+          <button id="overlay-btn-restart-over" class="btn-primary" type="button">
+            <span>Play Again</span> 🔄
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <section class="controls-bar" aria-label="Game Controls">
+      <!-- Main Action Buttons -->
+      <div class="main-controls">
+        <button id="btn-start" class="ctrl-btn" type="button" title="Start a new game">
+          <span>▶</span> Start
+        </button>
+        <button id="btn-pause" class="ctrl-btn" type="button" title="Pause the running game" disabled>
+          <span>⏸</span> Pause
+        </button>
+        <button id="btn-resume" class="ctrl-btn" type="button" title="Resume the paused game" disabled>
+          <span>⏯</span> Resume
+        </button>
+        <button id="btn-restart" class="ctrl-btn" type="button" title="Restart the game from beginning">
+          <span>🔄</span> Restart
+        </button>
+      </div>
+
+      <!-- Options Row -->
+      <div class="options-row">
+        <div class="option-group">
+          <label for="difficulty-select">Base Speed:</label>
+          <select id="difficulty-select">
+            <option value="140">Casual</option>
+            <option value="110" selected>Normal</option>
+            <option value="80">Arcade</option>
+          </select>
+        </div>
+
+        <div class="option-group">
+          <button id="btn-sound" class="icon-btn" type="button" title="Toggle Sound FX">
+            <span id="sound-icon" aria-hidden="true">🔊</span>
+            <span id="sound-text">Sound</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Legend -->
+    <div class="legend" aria-label="Items Legend">
+      <div class="legend-item">
+        <span class="legend-dot dot-apple" aria-hidden="true"></span>
+        <span>Apple (+10 pts & Grow)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot dot-golden" aria-hidden="true"></span>
+        <span>Golden Star (+50 Bonus)</span>
+      </div>
+    </div>
+
+    <!-- Mobile Virtual D-Pad -->
+    <div class="dpad-container" aria-label="On-Screen Touch Directional Controls">
+      <div class="dpad">
+        <button id="dpad-up" class="dpad-btn dpad-up" aria-label="Move Up" type="button">▲</button>
+        <button id="dpad-left" class="dpad-btn dpad-left" aria-label="Move Left" type="button">◀</button>
+        <div class="dpad-center" aria-hidden="true">🎮</div>
+        <button id="dpad-right" class="dpad-btn dpad-right" aria-label="Move Right" type="button">▶</button>
+        <button id="dpad-down" class="dpad-btn dpad-down" aria-label="Move Down" type="button">▼</button>
+      </div>
+    </div>
+
+    <!-- Keyboard Instructions / Help Bar -->
+    <footer class="help-bar">
+      Keyboard: <span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> / 
+      <span class="key-badge">Arrow Keys</span> &bull; Pause: <span class="key-badge">Space</span> / <span class="key-badge">P</span> &bull; 
+      Restart: <span class="key-badge">R</span>
+    </footer>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
